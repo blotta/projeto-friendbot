@@ -21,6 +21,19 @@ let group;
 /** @type {Phaser.Button} */
 let button;
 
+/** @type {Phaser.Sound} */
+let sound_error;
+/** @type {Phaser.Sound} */
+let sound_good;
+/** @type {Phaser.Sound} */
+let sound_great;
+/** @type {Phaser.Sound} */
+let sound_shween;
+
+/** @type {Phaser.Sound} */
+let music;
+
+
 function preload () {
 
     let images = [
@@ -35,6 +48,15 @@ function preload () {
     for (let img of images) {
         game.load.image("spr_" + img, "assets/images/" + img + ".png");
     }
+
+
+    // Audio
+    game.load.audio('snd_error', 'assets/sounds/error.wav');
+    game.load.audio('snd_good', 'assets/sounds/good.wav');
+    game.load.audio('snd_great', 'assets/sounds/great.wav');
+    game.load.audio('snd_shween', 'assets/sounds/shween.wav');
+
+    game.load.audio('snd_music', 'assets/music/hyper-action.ogg');
 }
 
 function create () {
@@ -56,6 +78,15 @@ function create () {
     button.anchor.set(0.5);
     button.scale.set(3, 1.5);
 
+
+    sound_error = game.add.audio("snd_error", 0.7);
+    sound_good = game.add.audio("snd_good", 0.7);
+    sound_great = game.add.audio("snd_great", 0.7);
+    sound_shween = game.add.audio("snd_shween", 0.3);
+
+    music = game.add.audio("snd_music", 1.2, true);
+    music.play();
+
     novaRotacao();
 }
 
@@ -64,7 +95,13 @@ function update() {
         elet = novoEletronico();
     }
 
-    game.physics.arcade.overlap(elet, maki, encaixaEletronico);
+    if (!game.physics.arcade.overlap(maki, elet, encaixaEletronico)) {
+
+        group.forEach(e => game.physics.arcade.overlap(e, elet, derrubarEletronico, null, this));
+        // if (game.physics.arcade.overlap(group, elet, derrubarEletronico)) {
+        //     console.log("Oops");
+        // }
+    }
 }
 
 function novoEletronico() {
@@ -81,12 +118,14 @@ function novoEletronico() {
 }
 
 function lancarEletronico() {
+    tocaSfx(sound_shween);
     elet.body.velocity.x = 1700;
 }
 
 function encaixaEletronico() {
+    tocaSfx(sound_good);
     let key = elet.key;
-    elet.kill();
+    elet.destroy();
 
     let e = game.add.sprite(0, 0, key);
     game.physics.enable(e, Phaser.Physics.ARCADE);
@@ -96,6 +135,28 @@ function encaixaEletronico() {
 
     group.add(e);
     elet = null;
+}
+
+/**
+ * 
+ * @param {Phaser.Sprite} e 
+ */
+function derrubarEletronico(e) {
+    tocaSfx(sound_error);
+    elet.kill();
+    elet = null;
+
+    let global_pos = e.worldPosition;
+    console.log(e);
+    group.remove(e);
+    e.x = global_pos.x;
+    e.y = global_pos.y;
+    // e.kill();
+    // e.x = 100;
+    // e.pivot.x = e.x;
+    e.body.velocity.x = -game.rnd.between(30, 100);
+    e.body.velocity.y = game.rnd.between(30, 100);
+    // elet = novoEletronico();
 }
 
 function novaRotacao() {
@@ -109,14 +170,23 @@ function novaRotacao() {
 }
 
 function render() {
-    game.debug.body(maki);
-    group.forEach((s) => {
-        game.debug.body(s);
-        game.debug.pixel(s.x, s.y, "#0000FF");
-    });
+    // game.debug.body(maki);
+    // group.forEach((s) => {
+    //     game.debug.body(s);
+    //     game.debug.pixel(s.x, s.y, "#0000FF");
+    // });
 
-    game.debug.spriteInfo(maki, 10, 20);
-    game.debug.pixel(maki.x, maki.y);
-    game.debug.pixel(group.x, group.y, "#FF0000");
-    game.debug.text(`Group: ${group.children.length}`, 10, 120);
+    // game.debug.spriteInfo(maki, 10, 20);
+    // game.debug.pixel(maki.x, maki.y);
+    // game.debug.pixel(group.x, group.y, "#FF0000");
+    // game.debug.text(`Group: ${group.children.length}`, 10, 120);
+}
+
+/**
+ * 
+ * @param {Phaser.Sound} sfx 
+ */
+function tocaSfx(sfx) {
+    if (sfx.isPlaying) sfx.stop();
+    sfx.play();
 }
