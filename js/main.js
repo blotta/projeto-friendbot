@@ -1,10 +1,7 @@
 /** @type {Phaser.Game} */
 let game;
 
-window.onload = function() {
-
-    game = new Phaser.Game(1024, 576, Phaser.AUTO, 'gamewindow', { preload: preload, create: create, update: update, render: render });
-};
+let playState = {}
 
 // MAKI
 /** @type {Phaser.Sprite} */
@@ -38,7 +35,7 @@ let sound_shween;
 let music;
 
 
-function preload () {
+playState.preload = function() {
 
     let images = [
         "maki_top",
@@ -63,7 +60,7 @@ function preload () {
     game.load.audio('snd_music', 'assets/music/hyper-action.ogg');
 }
 
-function create () {
+playState.create = function () {
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
     maki = game.add.sprite(game.world.width *3/4, game.world.height / 2, "spr_maki_top");
@@ -100,7 +97,7 @@ function create () {
     novaRotacao();
 }
 
-function update() {
+playState.update = function() {
     if (elet == null) {
         elet = novoEletronico();
     }
@@ -112,6 +109,19 @@ function update() {
         //     console.log("Oops");
         // }
     }
+}
+
+playState.render = function() {
+    // game.debug.body(maki);
+    // group.forEach((s) => {
+    //     game.debug.body(s);
+    //     game.debug.pixel(s.x, s.y, "#0000FF");
+    // });
+
+    // game.debug.spriteInfo(maki, 10, 20);
+    // game.debug.pixel(maki.x, maki.y);
+    // game.debug.pixel(group.x, group.y, "#FF0000");
+    // game.debug.text(`Group: ${group.children.length}`, 10, 120);
 }
 
 function novoEletronico() {
@@ -252,19 +262,6 @@ function checarCombinacao() {
     }
 }
 
-function render() {
-    // game.debug.body(maki);
-    // group.forEach((s) => {
-    //     game.debug.body(s);
-    //     game.debug.pixel(s.x, s.y, "#0000FF");
-    // });
-
-    // game.debug.spriteInfo(maki, 10, 20);
-    // game.debug.pixel(maki.x, maki.y);
-    // game.debug.pixel(group.x, group.y, "#FF0000");
-    // game.debug.text(`Group: ${group.children.length}`, 10, 120);
-}
-
 /**
  * 
  * @param {Phaser.Sound} sfx 
@@ -273,3 +270,13 @@ function tocaSfx(sfx) {
     if (sfx.isPlaying) sfx.stop();
     sfx.play();
 }
+
+window.onload = function() {
+
+    // game = new Phaser.Game(1024, 576, Phaser.AUTO, 'gamewindow', { preload: preload, create: create, update: update, render: render });
+    game = new Phaser.Game(1024, 576, Phaser.AUTO, 'gamewindow');
+
+    game.state.add('play', playState);
+
+    game.state.start('play');
+};
