@@ -247,12 +247,11 @@ function checarCombinacao() {
                 comb_strs.push(k);
             }
         }
-        console.log(comb_strs);
+        // console.log(comb_strs);
 
         for (let e of comb_strs) {
-            for (let a of combs[e].attached.list) {
-                a.destroy();
-                break;
+            for (let i = 0; i < combs[e].required.list.length; i++) {
+                elet_group.remove(elet_group.getFirst("key", e), true);
             }
         }
 
