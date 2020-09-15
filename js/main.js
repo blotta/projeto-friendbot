@@ -16,7 +16,11 @@ let elet;
 
 // Eletronicos
 /** @type {Phaser.Group} */
-let group;
+let elet_group;
+
+// Gameplay
+/** @type {Phaser.Group} */
+let elet_combinacao;
 
 /** @type {Phaser.Button} */
 let button;
@@ -68,9 +72,9 @@ function create () {
     let radius = maki.width / 2;
     maki.body.setCircle(radius, (-radius + 0.5 * maki.width  / maki.scale.x), (-radius + 0.5 * maki.height / maki.scale.y));
 
-    group = game.add.group();
-    group.x = maki.x;
-    group.y = maki.y;
+    elet_group = game.add.group();
+    elet_group.x = maki.x;
+    elet_group.y = maki.y;
 
     elet = novoEletronico();
 
@@ -78,6 +82,10 @@ function create () {
     button.anchor.set(0.5);
     button.scale.set(3, 1.5);
 
+    elet_combinacao = game.add.group();
+    // elet_combinacao.scale.set(0.4);
+    elet_combinacao.x = 40;
+    elet_combinacao.y = 40;
 
     sound_error = game.add.audio("snd_error", 0.7);
     sound_good = game.add.audio("snd_good", 0.7);
@@ -87,6 +95,8 @@ function create () {
     music = game.add.audio("snd_music", 1.2, true);
     music.play();
 
+    novaCombinacao(3);
+    console.log(elet_combinacao);
     novaRotacao();
 }
 
@@ -97,7 +107,7 @@ function update() {
 
     if (!game.physics.arcade.overlap(maki, elet, encaixaEletronico)) {
 
-        group.forEach(e => game.physics.arcade.overlap(e, elet, derrubarEletronico, null, this));
+        elet_group.forEach(e => game.physics.arcade.overlap(e, elet, derrubarEletronico, null, this));
         // if (game.physics.arcade.overlap(group, elet, derrubarEletronico)) {
         //     console.log("Oops");
         // }
@@ -133,8 +143,10 @@ function encaixaEletronico() {
     e.pivot.x = maki.width / 2;
     e.body.angularVelocity = maki.body.angularVelocity;
 
-    group.add(e);
+    elet_group.add(e);
     elet = null;
+
+    checarCombinacao();
 }
 
 /**
@@ -148,7 +160,7 @@ function derrubarEletronico(e) {
 
     let global_pos = e.worldPosition;
     console.log(e);
-    group.remove(e);
+    elet_group.remove(e);
     e.x = global_pos.x;
     e.y = global_pos.y;
     // e.kill();
@@ -157,6 +169,8 @@ function derrubarEletronico(e) {
     e.body.velocity.x = -game.rnd.between(30, 100);
     e.body.velocity.y = game.rnd.between(30, 100);
     // elet = novoEletronico();
+
+    checarCombinacao();
 }
 
 function novaRotacao() {
@@ -164,9 +178,78 @@ function novaRotacao() {
     if (Math.random() > 0.5) angVel = -angVel;
 
     maki.body.angularVelocity = angVel;
-    group.forEach(e => e.body.angularVelocity = angVel);
+    elet_group.forEach(e => e.body.angularVelocity = angVel);
 
     setTimeout(novaRotacao, game.rnd.between(1000, 5000));
+}
+
+/**
+ * 
+ * @param {number} n 
+ */
+function novaCombinacao(n) {
+    n = Math.floor(n);
+    let keys = [
+        "spr_eletronico_01",
+        "spr_eletronico_02",
+        "spr_eletronico_03",
+        "spr_eletronico_04"
+    ];
+    let picks = []
+    for (let i = 0; i < n; i++) {
+        picks.push(game.rnd.pick(keys));
+    }
+    elet_combinacao.removeAll(true);
+    elet_combinacao.createMultiple(1, picks, null, true);
+    elet_combinacao.forEach(e => e.scale.set(0.4));
+    elet_combinacao.align(n, -1, 100, 10, Phaser.CENTER);
+
+    tocaSfx(sound_great);
+}
+
+function checarCombinacao() {
+    let keys = [
+        "spr_eletronico_01",
+        "spr_eletronico_02",
+        "spr_eletronico_03",
+        "spr_eletronico_04"
+    ];
+    let combs = {};
+    let goal_reached = true;
+    for (let k of keys) {
+        let required = elet_combinacao.filter(e => e.key == k);
+        let attached = elet_group.filter(e => e.key == k);
+
+        combs[k] = { required: required, attached: attached };
+
+        if (combs[k].attached.list.length < combs[k].required.list.length) {
+            goal_reached = false;
+        }
+    }
+    console.log(combs);
+
+    if (goal_reached) {
+        console.log("Goal reached!");
+
+        let comb_strs = [];
+        for (let k of keys) {
+            for (let i = 0; i < combs[k].required.list.length; i++) {
+                comb_strs.push(k);
+            }
+        }
+        console.log(comb_strs);
+
+        for (let e of comb_strs) {
+            for (let a of combs[e].attached.list) {
+                a.destroy();
+                break;
+            }
+        }
+
+        novaCombinacao(3);
+    } else {
+        console.log("Goal NOT reached!");
+    }
 }
 
 function render() {
