@@ -36,9 +36,6 @@ let sound_great;
 /** @type {Phaser.Sound} */
 let sound_shween;
 
-/** @type {Phaser.Sound} */
-let music;
-
 
 playState.preload = function() {
 
@@ -61,11 +58,11 @@ playState.preload = function() {
     game.load.audio('snd_good', 'assets/sounds/good.wav');
     game.load.audio('snd_great', 'assets/sounds/great.wav');
     game.load.audio('snd_shween', 'assets/sounds/shween.wav');
-
-    game.load.audio('snd_music', 'assets/music/hyper-action.ogg');
 }
 
 playState.create = function () {
+    game.stage.backgroundColor = "#113344";
+
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
     maki = game.add.sprite(game.world.width *3/4, game.world.height / 2, "spr_maki_top");
@@ -88,13 +85,10 @@ playState.create = function () {
     elet_combinacao.x = 40;
     elet_combinacao.y = 40;
 
-    sound_error = game.add.audio("snd_error", 0.7);
-    sound_good = game.add.audio("snd_good", 0.7);
-    sound_great = game.add.audio("snd_great", 0.7);
+    sound_error = game.add.audio("snd_error", 0.5);
+    sound_good = game.add.audio("snd_good", 0.5);
+    sound_great = game.add.audio("snd_great", 0.5);
     sound_shween = game.add.audio("snd_shween", 0.3);
-
-    music = game.add.audio("snd_music", 1.2, true);
-    music.play();
 
     combinacoes_completadas = 0;
     elet_combinacao_count = 3;
@@ -277,7 +271,6 @@ function ganhouJogo() {
     restart_button.anchor.set(0.5);
 }
 
-
 /**
  * 
  * @param {Phaser.Sound} sfx 
@@ -286,7 +279,6 @@ function tocaSfx(sfx) {
     if (sfx.isPlaying) sfx.stop();
     sfx.play();
 }
-
 
 /**
  * INTRO
@@ -303,6 +295,9 @@ let maki_quebrado;
 /** @type {Phaser.Particles.Arcade.Emitter} */
 let emitter;
 
+/** @type {Phaser.Sound} */
+let music;
+
 let introState = {
     preload: function () {
         game.load.image("spr_terra", "assets/images/terra.jpg");
@@ -313,11 +308,19 @@ let introState = {
         game.load.image('spr_fire2', 'assets/images/particles/fire2.png');
         game.load.image('spr_fire3', 'assets/images/particles/fire3.png');
         game.load.image('spr_smoke', 'assets/images/particles/smoke-puff.png');
+
+        game.load.audio("snd_explosion", 'assets/sounds/explosion.wav');
+        game.load.audio("snd_falling4s", 'assets/sounds/falling-4s.mp3');
+        game.load.audio("snd_space_walk", 'assets/music/space-walk.ogg');
     },
     create: function () {
+        game.stage.backgroundColor = "#113344";
+
         introBG = game.add.tileSprite(0, 0, 1024, 576, 'spr_terra');
         introBG.tilePosition.x = 100;
         introBG.tilePosition.y = 50;
+
+        music = game.add.audio("snd_space_walk", 0.5, true).play(); 
 
         // texto intro
         let style = { font: 'bold 40pt Arial', fill: 'white', align: 'left', wordWrap: true, wordWrapWidth: 450 };
@@ -344,12 +347,11 @@ let introState = {
         }, 32000);
 
     },
-    update: function () {
-    },
+    update: function () {},
     render: function () {},
 
     animNaveCaindo() {
-        nave = game.add.sprite(game.world.width + 100, game.world.centerY, 'spr_nave');
+        nave = game.add.sprite(game.world.width + 200, game.world.centerY - 70, 'spr_nave');
         nave.anchor.set(0.5);
         nave.scale.set(-0.4, 0.4);
         nave.angle = -30;
@@ -378,9 +380,12 @@ let introState = {
             emitter.emitY = nave.y;
             emitter.start(true, 1000, null, 20);
             nave.destroy();
+            game.add.audio("snd_explosion", 1, false).play();
         });
         anim01.start();
         anim02.start();
+
+        game.add.sound("snd_falling4s", 0.3, false).play();
     },
 }
 
