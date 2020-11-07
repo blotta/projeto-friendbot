@@ -41,9 +41,7 @@ Game.Preloader.prototype = {
         this.load.image('eletronico_04', 'assets/images/eletronico_04.png');
 
         // Jogo2
-        // this.load.spritesheet('space-icons', 'assets/images/space-icons.png', 256, 256);
-        this.load.image('back-button', 'assets/images/back_btn.png');
-        this.load.spritesheet('play-pause-button', 'assets/images/j2_play_pause_btn.png', 160, 128);
+        this.load.spritesheet('menu_buttons', 'assets/images/j2_buttons.png', 160, 128);
 
         this.load.image('si-earth', 'assets/images/space-icon-earth.png');
         this.load.image('si-comet', 'assets/images/space-icon-comet.png');

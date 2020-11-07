@@ -20,14 +20,13 @@ Game.Jogo2 = function(game) {
         empty: null,
     };
 
-    this.gamestate = 'edit'; // edit, playing
+    this.gamestate = 'edit'; // edit, playing, menu
 
     this.sel_grp = null;
     this.btn_grp = null;
 
     this.selected_btn = null;
 
-    // this.sheet.data.grid -> 2d array meta data
     this.sheet = null; // group
     this.cell_size = 0;
     this.w_count = 32;
@@ -46,15 +45,20 @@ Game.Jogo2 = function(game) {
 
     // Player
     this.player_marker = null;
-    this.player_curr_beat = 0;
     this.player_playbtn = null;
     this.player_speed = 160; // bmp - beats per minute
-    this.step_time = 0;
+    this.step_time = 0; // 60000 / bmp
+    this.should_loop = false;
+
+    // Menu
+    this.menu_btn = null;
+    this.submenu_buttons = null;
+    this.loop_btn = null;
 }
 
 Game.Jogo2.prototype = {
     preload: function() {
-        if (Game.music.isPlaying) {
+        if (Game.music != null && Game.music.isPlaying) {
             Game.music.stop();
         }
         this.stage.backgroundColor = "#f2f2f2";
@@ -72,21 +76,18 @@ Game.Jogo2.prototype = {
         this.sounds.comet = this.add.sound('sndSynthLead8', 1, false);
 
         for (let snd of ['alien', 'spaceship', 'sun', 'comet']) {
-            // this.sounds[snd] = this.add.audio('sndSynthBass8', 1, false);
             this.sounds[snd].allowMultiple = true;
-            // e.g C D E F A B C (C major)
+            // e.g C D E F G A B C (C major)
             for (let i = 0; i < 8; i++) {
                 this.sounds[snd].addMarker(i.toString(), i, 1, 1, false);
             }
         }
-        // this.sounds.empty = this.add.sound('sndC1Start', 0.1, false);
 
         // Init selection group
         this.sel_grp = this.add.group();
         this.sel_grp.scale.set(0.6);
         this.sel_grp.x = this.camera.bounds.centerX;
         this.sel_grp.y = 0;
-        // this.select_grp.x = this.camera.bounds.width/2;
 
         const panel = this.add.sprite(0, 0, 'notes-panel');
         panel.anchor.set(0.5, 0);
@@ -121,18 +122,16 @@ Game.Jogo2.prototype = {
 
         for (let i = 0; i < this.w_count * this.h_count; i++) {
             const empty_frame = this.sprites.indexOf('empty');
-            let btn = this.add.button(0, 0, 'space-icons'); // , () => {}, this, empty_frame, empty_frame);
+            let btn = this.add.button(0, 0, 'space-icons');
             btn.setFrames(empty_frame, empty_frame);
             btn.data.key = 'empty';
             btn.data.cx = Math.floor(i / this.h_count);
             btn.data.cy = i % this.h_count;
-            // btn.setFrame(7);
             this.sheet.add(btn);
         }
 
         this.sheet.align(-1, this.h_count, this.cell_size + pad, this.cell_size + pad);
         this.sheet.x = this.cell_size / 2;
-        // this.sheet.y = this.camera.bounds.centerY - cell_size * this.h_count / 2;
         this.sheet.y = this.camera.bounds.height - this.cell_size * this.h_count - this.cell_size * 3/4;
         this.sheet_initial_x = this.sheet.x;
         this.sheet_old_x = this.sheet.x;
@@ -145,7 +144,6 @@ Game.Jogo2.prototype = {
         bmp.fill(200, 200, 200, 255);
         const subdiv_step = (this.cell_size + pad) * 4;
         for (let i = 0; i < this.w_count / 4; i += 2) {
-            // this.add.sprite(this.sheet.x + i * subdiv_step, this.sheet.y, this.cache.getBitmapData('subdivision'));
             this.subdiv.create(i * subdiv_step, 0, this.cache.getBitmapData('subdivision'));
         }
 
@@ -154,25 +152,70 @@ Game.Jogo2.prototype = {
         this.sheet.onChildInputDown.add(this.sheetTouchStart.bind(this));
         this.sheet.onChildInputUp.add(this.sheetTouchEnd.bind(this));
 
-        // Player
+
+        /* Player */
+        ////////////
         const marker_bmp = this.add.bitmapData(5, (this.cell_size + pad) * this.h_count, 'player_marker', true);
         marker_bmp.fill(33, 33, 33, 255);
         this.player_marker = this.subdiv.create(0, 0, this.cache.getBitmapData('player_marker'));
         this.world.bringToTop(this.player_marker);
 
-        this.player_playbtn = this.add.button(this.sheet.x, 0, 'play-pause-button', this.togglePlaySong, this, 0, 0);
-        // this.player_playbtn.scale.set(0.6);
+        this.player_playbtn = this.add.button(this.sheet.x, 0, 'menu_buttons', this.togglePlaySong, this, 0, 0);
 
         this.step_time = 60000 / this.player_speed; // ms per beat
 
-        /* Back to menu button */
-        this.add.button(this.camera.bounds.width - this.sheet.x, 0, 'back-button', () => {
-            this.state.start('MainMenu');
-        }, this).anchor.set(1, 0);
 
+        /* Menu */
+        //////////
+        this.menu_btn = this.add.button(this.camera.bounds.width - this.sheet.x, 0, 'menu_buttons', this.toggleMenu, this, 2, 2);
+        this.menu_btn.anchor.set(1, 0);
+
+        this.submenu_buttons = this.add.group();
+
+        this.loop_btn = this.add.button(0, 0, 'menu_buttons', this.toggleShouldLoop, this, 4, 4);
+        this.submenu_buttons.add(this.loop_btn);
+
+        const clear_btn = this.add.button(0, 0, 'menu_buttons', this.clearSheet, this, 7, 7);
+        this.submenu_buttons.add(clear_btn);
+
+        const exit_btn = this.add.button(0, 0, 'menu_buttons',() => {this.state.start('MainMenu');}, this, 6, 6);
+        this.submenu_buttons.add(exit_btn);
+
+        this.submenu_buttons.align(-1, 1, 160, 128);
+
+        this.submenu_buttons.alignTo(this.menu_btn, Phaser.BOTTOM_RIGHT);
+        this.submenu_buttons.x = this.camera.bounds.width;
+
+        console.log(this.menu_btn);
+        console.log(this.submenu_buttons);
     },
 
-    create: function() {},
+    toggleMenu: function(btn) {
+        if (this.gamestate != 'menu') {
+            if (this.gamestate == 'playing') this.togglePlaySong();
+            this.gamestate = 'menu';
+            this.menu_btn.setFrames(3, 3);
+            this.player_playbtn.inputEnabled = false;
+            this.add.tween(this.submenu_buttons)
+                .to({x: this.menu_btn.x - 160 * this.submenu_buttons.children.length}, 500, Phaser.Easing.Exponential.Out, true);
+        } else {
+            this.gamestate = 'edit';
+            this.menu_btn.setFrames(2, 2);
+            this.player_playbtn.inputEnabled = true;
+            this.add.tween(this.submenu_buttons)
+                .to({x: this.camera.bounds.width}, 500, Phaser.Easing.Exponential.Out, true);
+        }
+    },
+
+    toggleShouldLoop: function() {
+        this.should_loop = !this.should_loop;
+        const frame = this.should_loop ? 5 : 4;
+        this.loop_btn.setFrames(frame, frame);
+    },
+
+    create: function() {
+        this.loadCells(Game.default_song);
+    },
 
     update: function() {
         if (this.gamestate == 'edit') {
@@ -198,42 +241,53 @@ Game.Jogo2.prototype = {
         this.subdiv.x = this.sheet.x;
     },
 
-    togglePlaySong: function(btn) {
+    togglePlaySong: function(btn = null) {
         this.sheet.x = this.sheet_initial_x;
 
         if (this.gamestate == 'edit') {
             this.gamestate = 'playing';
-            if (btn) btn.setFrames(1, 1);
-            this.stepSong();
+            this.player_playbtn.setFrames(1, 1);
+            this.playBeat(0);
+            this._printSong();
         } else if (this.gamestate == 'playing') {
             this.gamestate = 'edit';
-            if (btn) btn.setFrames(0, 0);
+            this.player_playbtn.setFrames(0, 0);
             this.player_marker.x = 0;
-            this.player_curr_beat = 0;
+            this.sheet.x = this.sheet_initial_x;
         }
     },
 
-    stepSong: function() {
-        // play sounds in beat
-        if (this.gamestate == 'playing') this.playSoundsInBeat(this.player_curr_beat);
+    playBeat: function(beat) {
+        // play beat. Assumes beat exists
+        if (this.gamestate == 'playing') this.playSoundsInBeat(beat);
+        if (beat == 0) this.sheet.x = this.sheet_initial_x;
 
-        // setup next step
-        let nextStep = this.player_marker.x + this.cell_size;
-        if (nextStep > this.cell_size * this.w_count) {
-            this.togglePlaySong();
-            return;
+        // Determine next beat
+        let nextBeat = beat + 1;
+        if (nextBeat > this.w_count - 1) {
+            if (this.should_loop) {
+                nextBeat = 0;
+            } else {
+                // song ended. no loop
+                this.togglePlaySong();
+                return;
+            }
         } else if (this.gamestate != 'playing') {
+            // pressed menu or play button. stop song
             this.add.tween(this.player_marker)
                 .to({x: 0}, 200, Phaser.Easing.Exponential.Out, true);
             return;
         }
 
-        this.player_curr_beat++;
-        this.add.tween(this.player_marker).to({x: nextStep}, this.step_time - 50, Phaser.Easing.Exponential.Out, true);
+        // Move marker to front of beat that was just played
+        this.add.tween(this.player_marker).to({x: nextBeat * this.cell_size}, this.step_time - 50, Phaser.Easing.Exponential.Out, true);
+
+        // setup next time playBeat should play next beat
         this.time.events.add(this.step_time, () => {
-            this.stepSong();
+            this.playBeat(nextBeat);
         }, this);
 
+        // offset sheet so marker is visible
         let offset = this.camera.bounds.centerX
         if (this.player_marker.x > offset &&
             this.player_marker.x < this.cell_size * this.w_count - offset + this.cell_size) {
@@ -241,6 +295,7 @@ Game.Jogo2.prototype = {
             this.add.tween(this.sheet).to({x: offset - this.player_marker.x},
                 this.step_time - 50, Phaser.Easing.Exponential.Out, true);
         }
+
     },
 
     sheetTouchStart: function(obj, pointer) {
@@ -262,7 +317,6 @@ Game.Jogo2.prototype = {
 
         if (this.sheet.x > this.sheet_initial_x) {
             this.add.tween(this.sheet).to({x: this.sheet_initial_x}, 300, Phaser.Easing.Exponential.Out, true);
-            // this.add.tween(this.subdiv).to({x: this.sheet_initial_x}, 300, Phaser.Easing.Exponential.Out, true);
         } else if (this.sheet.x + this.cell_size * this.w_count + this.cell_size / 2 < this.camera.bounds.width) {
             let targetX = this.camera.bounds.width - this.cell_size * this.w_count - this.cell_size / 2;
             this.add.tween(this.sheet).to({x: targetX}, 300, Phaser.Easing.Exponential.Out, true);
@@ -327,6 +381,24 @@ Game.Jogo2.prototype = {
         cell.setFrames(frame, frame);
     },
 
+    clearSheet: function() {
+        for (let cell of this.sheet.children) {
+            cell.data.key = 'empty';
+            const frame = this.sprites.indexOf('empty')
+            cell.setFrames(frame, frame);
+        }
+    },
+
+    loadCells: function(obj) {
+        this.clearSheet();
+        for (let cell of obj.cells) {
+            let idx = (this.h_count * cell.cx) + cell.cy;
+            this.sheet.children[idx].data.key = cell.key;
+            const frame = this.sprites.indexOf(cell.key);
+            this.sheet.children[idx].setFrames(frame, frame);
+        }
+    },
+
     playSoundsInBeat: function(col) {
         const first_idx = col * this.h_count;
         const last_idx = first_idx + this.h_count - 1;
@@ -346,6 +418,600 @@ Game.Jogo2.prototype = {
                 this.sounds[cell.data.key].play();
             }
         }
+    },
+
+    _printSong: function() {
+        const song = {};
+        song.w_count = this.w_count;
+        song.h_count = this.h_count;
+        song.cells = [];
+        for (let cell of this.sheet.children) {
+            if (cell.data.key == 'empty') continue;
+            song.cells.push({key: cell.data.key, cx: cell.data.cx, cy: cell.data.cy});
+        }
+        console.log(song);
     }
 
+}
+
+Game.default_song = {
+  "w_count": 32,
+  "h_count": 8,
+  "cells": [
+    {
+      "key": "earth",
+      "cx": 0,
+      "cy": 0
+    },
+    {
+      "key": "sun",
+      "cx": 0,
+      "cy": 2
+    },
+    {
+      "key": "comet",
+      "cx": 0,
+      "cy": 4
+    },
+    {
+      "key": "alien",
+      "cx": 0,
+      "cy": 7
+    },
+    {
+      "key": "rocket",
+      "cx": 1,
+      "cy": 0
+    },
+    {
+      "key": "spaceship",
+      "cx": 1,
+      "cy": 5
+    },
+    {
+      "key": "comet",
+      "cx": 1,
+      "cy": 7
+    },
+    {
+      "key": "red-planet",
+      "cx": 2,
+      "cy": 0
+    },
+    {
+      "key": "comet",
+      "cx": 2,
+      "cy": 3
+    },
+    {
+      "key": "alien",
+      "cx": 2,
+      "cy": 7
+    },
+    {
+      "key": "rocket",
+      "cx": 3,
+      "cy": 0
+    },
+    {
+      "key": "spaceship",
+      "cx": 3,
+      "cy": 5
+    },
+    {
+      "key": "comet",
+      "cx": 3,
+      "cy": 7
+    },
+    {
+      "key": "earth",
+      "cx": 4,
+      "cy": 0
+    },
+    {
+      "key": "sun",
+      "cx": 4,
+      "cy": 1
+    },
+    {
+      "key": "comet",
+      "cx": 4,
+      "cy": 6
+    },
+    {
+      "key": "alien",
+      "cx": 4,
+      "cy": 7
+    },
+    {
+      "key": "rocket",
+      "cx": 5,
+      "cy": 0
+    },
+    {
+      "key": "spaceship",
+      "cx": 5,
+      "cy": 4
+    },
+    {
+      "key": "comet",
+      "cx": 5,
+      "cy": 7
+    },
+    {
+      "key": "red-planet",
+      "cx": 6,
+      "cy": 0
+    },
+    {
+      "key": "comet",
+      "cx": 6,
+      "cy": 5
+    },
+    {
+      "key": "alien",
+      "cx": 6,
+      "cy": 7
+    },
+    {
+      "key": "rocket",
+      "cx": 7,
+      "cy": 0
+    },
+    {
+      "key": "spaceship",
+      "cx": 7,
+      "cy": 4
+    },
+    {
+      "key": "comet",
+      "cx": 7,
+      "cy": 7
+    },
+    {
+      "key": "sun",
+      "cx": 8,
+      "cy": 0
+    },
+    {
+      "key": "earth",
+      "cx": 8,
+      "cy": 1
+    },
+    {
+      "key": "comet",
+      "cx": 8,
+      "cy": 2
+    },
+    {
+      "key": "alien",
+      "cx": 8,
+      "cy": 7
+    },
+    {
+      "key": "rocket",
+      "cx": 9,
+      "cy": 0
+    },
+    {
+      "key": "sun",
+      "cx": 9,
+      "cy": 1
+    },
+    {
+      "key": "comet",
+      "cx": 9,
+      "cy": 3
+    },
+    {
+      "key": "spaceship",
+      "cx": 9,
+      "cy": 5
+    },
+    {
+      "key": "red-planet",
+      "cx": 10,
+      "cy": 0
+    },
+    {
+      "key": "sun",
+      "cx": 10,
+      "cy": 2
+    },
+    {
+      "key": "comet",
+      "cx": 10,
+      "cy": 6
+    },
+    {
+      "key": "alien",
+      "cx": 10,
+      "cy": 7
+    },
+    {
+      "key": "rocket",
+      "cx": 11,
+      "cy": 0
+    },
+    {
+      "key": "sun",
+      "cx": 11,
+      "cy": 3
+    },
+    {
+      "key": "spaceship",
+      "cx": 11,
+      "cy": 5
+    },
+    {
+      "key": "comet",
+      "cx": 11,
+      "cy": 7
+    },
+    {
+      "key": "earth",
+      "cx": 12,
+      "cy": 0
+    },
+    {
+      "key": "sun",
+      "cx": 12,
+      "cy": 4
+    },
+    {
+      "key": "comet",
+      "cx": 12,
+      "cy": 5
+    },
+    {
+      "key": "alien",
+      "cx": 12,
+      "cy": 7
+    },
+    {
+      "key": "rocket",
+      "cx": 13,
+      "cy": 0
+    },
+    {
+      "key": "comet",
+      "cx": 13,
+      "cy": 3
+    },
+    {
+      "key": "spaceship",
+      "cx": 13,
+      "cy": 4
+    },
+    {
+      "key": "sun",
+      "cx": 13,
+      "cy": 7
+    },
+    {
+      "key": "red-planet",
+      "cx": 14,
+      "cy": 0
+    },
+    {
+      "key": "sun",
+      "cx": 14,
+      "cy": 3
+    },
+    {
+      "key": "comet",
+      "cx": 14,
+      "cy": 6
+    },
+    {
+      "key": "alien",
+      "cx": 14,
+      "cy": 7
+    },
+    {
+      "key": "rocket",
+      "cx": 15,
+      "cy": 0
+    },
+    {
+      "key": "spaceship",
+      "cx": 15,
+      "cy": 4
+    },
+    {
+      "key": "comet",
+      "cx": 15,
+      "cy": 7
+    },
+    {
+      "key": "earth",
+      "cx": 16,
+      "cy": 0
+    },
+    {
+      "key": "sun",
+      "cx": 16,
+      "cy": 2
+    },
+    {
+      "key": "comet",
+      "cx": 16,
+      "cy": 4
+    },
+    {
+      "key": "alien",
+      "cx": 16,
+      "cy": 7
+    },
+    {
+      "key": "rocket",
+      "cx": 17,
+      "cy": 0
+    },
+    {
+      "key": "spaceship",
+      "cx": 17,
+      "cy": 5
+    },
+    {
+      "key": "comet",
+      "cx": 17,
+      "cy": 7
+    },
+    {
+      "key": "red-planet",
+      "cx": 18,
+      "cy": 0
+    },
+    {
+      "key": "comet",
+      "cx": 18,
+      "cy": 3
+    },
+    {
+      "key": "alien",
+      "cx": 18,
+      "cy": 7
+    },
+    {
+      "key": "rocket",
+      "cx": 19,
+      "cy": 0
+    },
+    {
+      "key": "spaceship",
+      "cx": 19,
+      "cy": 5
+    },
+    {
+      "key": "comet",
+      "cx": 19,
+      "cy": 7
+    },
+    {
+      "key": "earth",
+      "cx": 20,
+      "cy": 0
+    },
+    {
+      "key": "sun",
+      "cx": 20,
+      "cy": 1
+    },
+    {
+      "key": "comet",
+      "cx": 20,
+      "cy": 6
+    },
+    {
+      "key": "alien",
+      "cx": 20,
+      "cy": 7
+    },
+    {
+      "key": "rocket",
+      "cx": 21,
+      "cy": 0
+    },
+    {
+      "key": "spaceship",
+      "cx": 21,
+      "cy": 4
+    },
+    {
+      "key": "comet",
+      "cx": 21,
+      "cy": 7
+    },
+    {
+      "key": "red-planet",
+      "cx": 22,
+      "cy": 0
+    },
+    {
+      "key": "comet",
+      "cx": 22,
+      "cy": 5
+    },
+    {
+      "key": "alien",
+      "cx": 22,
+      "cy": 7
+    },
+    {
+      "key": "rocket",
+      "cx": 23,
+      "cy": 0
+    },
+    {
+      "key": "spaceship",
+      "cx": 23,
+      "cy": 4
+    },
+    {
+      "key": "comet",
+      "cx": 23,
+      "cy": 7
+    },
+    {
+      "key": "earth",
+      "cx": 24,
+      "cy": 0
+    },
+    {
+      "key": "sun",
+      "cx": 24,
+      "cy": 2
+    },
+    {
+      "key": "comet",
+      "cx": 24,
+      "cy": 4
+    },
+    {
+      "key": "alien",
+      "cx": 24,
+      "cy": 7
+    },
+    {
+      "key": "rocket",
+      "cx": 25,
+      "cy": 0
+    },
+    {
+      "key": "sun",
+      "cx": 25,
+      "cy": 4
+    },
+    {
+      "key": "spaceship",
+      "cx": 25,
+      "cy": 5
+    },
+    {
+      "key": "comet",
+      "cx": 25,
+      "cy": 6
+    },
+    {
+      "key": "red-planet",
+      "cx": 26,
+      "cy": 0
+    },
+    {
+      "key": "sun",
+      "cx": 26,
+      "cy": 1
+    },
+    {
+      "key": "comet",
+      "cx": 26,
+      "cy": 3
+    },
+    {
+      "key": "alien",
+      "cx": 26,
+      "cy": 7
+    },
+    {
+      "key": "rocket",
+      "cx": 27,
+      "cy": 0
+    },
+    {
+      "key": "comet",
+      "cx": 27,
+      "cy": 5
+    },
+    {
+      "key": "spaceship",
+      "cx": 27,
+      "cy": 7
+    },
+    {
+      "key": "earth",
+      "cx": 28,
+      "cy": 0
+    },
+    {
+      "key": "sun",
+      "cx": 28,
+      "cy": 3
+    },
+    {
+      "key": "comet",
+      "cx": 28,
+      "cy": 6
+    },
+    {
+      "key": "alien",
+      "cx": 28,
+      "cy": 7
+    },
+    {
+      "key": "earth",
+      "cx": 29,
+      "cy": 0
+    },
+    {
+      "key": "sun",
+      "cx": 29,
+      "cy": 1
+    },
+    {
+      "key": "comet",
+      "cx": 29,
+      "cy": 3
+    },
+    {
+      "key": "spaceship",
+      "cx": 29,
+      "cy": 7
+    },
+    {
+      "key": "sun",
+      "cx": 30,
+      "cy": 0
+    },
+    {
+      "key": "comet",
+      "cx": 30,
+      "cy": 1
+    },
+    {
+      "key": "red-planet",
+      "cx": 30,
+      "cy": 2
+    },
+    {
+      "key": "alien",
+      "cx": 30,
+      "cy": 7
+    },
+    {
+      "key": "comet",
+      "cx": 31,
+      "cy": 0
+    },
+    {
+      "key": "rocket",
+      "cx": 31,
+      "cy": 1
+    },
+    {
+      "key": "red-planet",
+      "cx": 31,
+      "cy": 2
+    },
+    {
+      "key": "spaceship",
+      "cx": 31,
+      "cy": 4
+    },
+    {
+      "key": "alien",
+      "cx": 31,
+      "cy": 7
+    }
+  ]
 }
