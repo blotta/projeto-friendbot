@@ -61,8 +61,7 @@ Game.Jogo1Intro.prototype = {
     },
 
     create: function() {
-        // console.log(Game.music);
-        if (!Game.music.isPlaying) {
+        if (Game.music.isPlaying == false) {
             Game.music.play();
         }
     },

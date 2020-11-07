@@ -46,13 +46,13 @@ Game.Jogo1.prototype = {
 
         // this.sfx.good = this.add.audio('sndGood');
         // this.sfx.great = this.add.audio('sndGreat');
-        this.sfx.launch = this.add.audio('sndShween');
-        this.sfx.new_comb_init = this.add.audio('sndC1Start');
-        this.sfx.new_comb_done = this.add.audio('sndC1Stop');
-        this.sfx.attach = this.add.audio('sndGood');
-        this.sfx.comb_complete = this.add.audio('sndFinish');
-        this.sfx.drop = this.add.audio('sndError');
-        this.sfx.win = this.add.audio('sndApplause');
+        this.sfx.launch = this.add.audio('sndShween', 0.3);
+        this.sfx.new_comb_init = this.add.audio('sndC1Start', 0.3);
+        this.sfx.new_comb_done = this.add.audio('sndC1Stop', 0.3);
+        this.sfx.attach = this.add.audio('sndGood', 0.3);
+        this.sfx.comb_complete = this.add.audio('sndFinish', 0.3);
+        this.sfx.drop = this.add.audio('sndError', 0.3);
+        this.sfx.win = this.add.audio('sndApplause', 0.3);
 
         // setup rotating group
         this.rot_group = this.add.group();

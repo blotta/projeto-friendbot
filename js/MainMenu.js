@@ -20,10 +20,12 @@ Game.MainMenu.prototype = {
 
     create: function() {
 
-        this.music = this.add.audio('sndIntroMusic');
-
         if (Game.music == null) {
-            Game.music = this.music.play();
+            Game.music = this.add.audio('sndIntroMusic', 0.2);
+        }
+
+        if (Game.music.isPlaying == false) {
+            Game.music.play();
             // if (Game.debug) this.music.stop();
         }
 
@@ -71,11 +73,15 @@ Game.MainMenu.prototype = {
         this.jogo2Button.y = 150 * -Math.sin(Math.PI + this.state_time * 0.3);
     },
 
-    startGame: function(pointer) {
-        // Play button has been clicked or touched. Stop music (or it will keep playing)
-        this.music.stop();
-
-        this.state.start('Jogo1Intro');
-    }
+    startGame: function(btn) {
+        switch(btn.key) {
+            case 'red_square':
+                this.state.start('Jogo1Intro');
+                break;
+            case 'nave':
+                this.state.start('Jogo2');
+                break;
+        }
+    },
 
 }

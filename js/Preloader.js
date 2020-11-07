@@ -40,6 +40,22 @@ Game.Preloader.prototype = {
         this.load.image('eletronico_03', 'assets/images/eletronico_03.png');
         this.load.image('eletronico_04', 'assets/images/eletronico_04.png');
 
+        // Jogo2
+        // this.load.spritesheet('space-icons', 'assets/images/space-icons.png', 256, 256);
+        this.load.image('back-button', 'assets/images/back_btn.png');
+        this.load.spritesheet('play-pause-button', 'assets/images/j2_play_pause_btn.png', 160, 128);
+
+        this.load.image('si-earth', 'assets/images/space-icon-earth.png');
+        this.load.image('si-comet', 'assets/images/space-icon-comet.png');
+        this.load.image('si-alien', 'assets/images/space-icon-alien.png');
+        this.load.image('si-red-planet', 'assets/images/space-icon-red-planet.png');
+        this.load.image('si-rocket', 'assets/images/space-icon-rocket.png');
+        this.load.image('si-sun', 'assets/images/space-icon-sun.png');
+        this.load.image('si-spaceship', 'assets/images/space-icon-spaceship.png');
+        this.load.image('notes-panel', 'assets/images/notes-panel.png');
+        this.load.image('empty-slot', 'assets/images/empty-slot.png');
+        this.load.spritesheet('space-icons', 'assets/images/space-icons-ext48.png', 48, 48);
+
         // Particles
         this.load.image('pFire1', 'assets/images/particles/fire1.png');
         this.load.image('pFire2', 'assets/images/particles/fire2.png');
@@ -61,6 +77,13 @@ Game.Preloader.prototype = {
         this.load.audio('sndFinish', 'assets/sounds/finish.wav');
         this.load.audio('sndApplause', 'assets/sounds/applause.wav');
 
+        this.load.audio('sndBassDrum', 'assets/sounds/j2_bassdrum.wav');
+        this.load.audio('sndSnare', 'assets/sounds/j2_snare.wav');
+        this.load.audio('sndHithat', 'assets/sounds/j2_hithat.wav');
+        this.load.audio('sndSynthBass8', 'assets/sounds/j2_synthbass8.wav');
+        this.load.audio('sndChords8', 'assets/sounds/j2_chords8.wav');
+        this.load.audio('sndXylo8', 'assets/sounds/j2_xylo8.wav');
+        this.load.audio('sndSynthLead8', 'assets/sounds/j2_synthlead8.wav');
     },
 
     create: function() {
@@ -76,6 +99,7 @@ Game.Preloader.prototype = {
             this.ready = true;
             this.state.start('MainMenu');
             // this.state.start('Jogo1');
+            // this.state.start('Jogo2');
         }
     }
 }
