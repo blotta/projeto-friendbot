@@ -75,7 +75,7 @@ Game.MainMenu.prototype = {
 
         let w = 190;
         let h = 160;
-        this.button_group.align(this.button_group.children.length, 1, w, h);
+        this.button_group.align(this.button_group.children.length, 1, w, h, Phaser.TOP_CENTER);
         this.button_group.y = 60;
         this.button_group.x = this.camera.bounds.centerX - w * this.button_group.children.length / 2;
 
@@ -89,7 +89,7 @@ Game.MainMenu.prototype = {
         let desc_style = { font: 'bold 20pt Arial', fill: 'white', align: 'left', wordWrap: true, wordWrapWidth: this.camera.bounds.width - 300};
         this.desc = this.add.text(60, this.camera.bounds.centerY + 120, "", desc_style);
 
-        if (!Game.menu_intro_skip){
+        if (Game.menu_intro_skip == false){
             Game.menu_intro_skip = true;
 
             // fade in

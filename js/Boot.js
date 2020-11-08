@@ -2,7 +2,7 @@ const Game = {
     // Global level vars
     music: null,
     debug: true,
-    menu_intro_skip: true,
+    menu_intro_skip: false,
 };
 
 Game.Boot = function(game) {
