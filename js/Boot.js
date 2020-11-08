@@ -1,7 +1,8 @@
 const Game = {
     // Global level vars
     music: null,
-    debug: true
+    debug: true,
+    menu_intro_skip: true,
 };
 
 Game.Boot = function(game) {

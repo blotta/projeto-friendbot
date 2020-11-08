@@ -34,6 +34,9 @@ Game.Preloader.prototype = {
         this.load.image('restart_button', 'assets/images/restart_button.png');
         this.load.image('space_bg', 'assets/images/spaceBG-smaller.png');
 
+        // Main Menu
+        this.load.spritesheet('main_menu_btns', 'assets/images/mm_activities_buttons.png', 160, 160);
+
         // JOGO 1
         this.load.image('eletronico_01', 'assets/images/eletronico_01.png');
         this.load.image('eletronico_02', 'assets/images/eletronico_02.png');
