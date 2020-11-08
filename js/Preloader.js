@@ -33,6 +33,7 @@ Game.Preloader.prototype = {
         this.load.image('red_square', 'assets/images/square_red.png');
         this.load.image('restart_button', 'assets/images/restart_button.png');
         this.load.image('space_bg', 'assets/images/spaceBG-smaller.png');
+        this.load.image('tap_to_continue', 'assets/images/next-step-continue-icon.png');
 
         // Main Menu
         this.load.spritesheet('main_menu_btns', 'assets/images/mm_activities_buttons.png', 160, 160);
@@ -99,7 +100,7 @@ Game.Preloader.prototype = {
         if (this.cache.isSoundDecoded('sndIntroMusic') && this.ready == false) {
             this.ready = true;
             this.state.start('MainMenu');
-            // this.state.start('Jogo1');
+            // this.state.start('Jogo1Intro');
             // this.state.start('Jogo2');
         }
     }

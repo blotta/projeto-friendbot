@@ -119,7 +119,8 @@ Game.MainMenu.prototype = {
         for (let b of this.button_group.children) {
             b.scale.set(1);
         }
-        btn.scale.set(1.1);
+        this.add.tween(btn.scale).to({x: 1.3, y: 1.3}, 200, Phaser.Easing.Bounce.Out, true);
+        // btn.scale.set(1.3);
 
         // info
         const key = btn.data.gameStateKey;
@@ -131,7 +132,6 @@ Game.MainMenu.prototype = {
         this.desc.text = this.selectedGame.desc;
 
         // button
-        console.log(this.play_btn);
         if (this.play_btn == null) {
             this.play_btn = this.add.button(this.camera.bounds.width - 260, this.camera.bounds.centerY + 60, 'main_menu_btns', () => {}, this, 2, 2);
         }
@@ -140,16 +140,4 @@ Game.MainMenu.prototype = {
             this.state.start(this.selectedGame.next_state);
         });
     },
-
-    startGame: function(btn) {
-        switch(btn.key) {
-            case 'red_square':
-                this.state.start('Jogo1Intro');
-                break;
-            case 'nave':
-                this.state.start('Jogo2');
-                break;
-        }
-    },
-
 }
