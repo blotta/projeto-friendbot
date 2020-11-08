@@ -16,10 +16,10 @@ Game.Boot.prototype = {
         this.stage.disableVisibilityChange = true;
 
         this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-        this.scale.setMinMax(1024, 576, 1280, 720);
+        // this.scale.setMinMax(1024, 576, 1280, 720);
+        this.scale.setMinMax(512, 288, 1280, 720);
         this.scale.pageAlignHorizontally = true;
         this.scale.pageAlignVertically = true;
-        // this.scale.scaleMode = Phaser.ScaleManager.RESIZE;
 
         if (!this.game.device.desktop)
         {
@@ -27,7 +27,9 @@ Game.Boot.prototype = {
             this.scale.setResizeCallback(this.gameResized, this);
             // this.scale.enterIncorrectOrientation.add(this.enterIncorrectOrientation, this);
             // this.scale.leaveIncorrectOrientation.add(this.leaveIncorrectOrientation, this);
+            this.scale.startFullScreen();
         }
+
     },
 
     preload: function() {
