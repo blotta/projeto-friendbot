@@ -17,7 +17,7 @@ Game.Boot.prototype = {
 
         this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
         // this.scale.setMinMax(1024, 576, 1280, 720);
-        this.scale.setMinMax(512, 288, 1280, 720);
+        this.scale.setMinMax(512, 288, 1980, 1080);
         this.scale.pageAlignHorizontally = true;
         this.scale.pageAlignVertically = true;
 
@@ -27,8 +27,9 @@ Game.Boot.prototype = {
             this.scale.setResizeCallback(this.gameResized, this);
             // this.scale.enterIncorrectOrientation.add(this.enterIncorrectOrientation, this);
             // this.scale.leaveIncorrectOrientation.add(this.leaveIncorrectOrientation, this);
-            this.scale.startFullScreen();
+
         }
+        // this.scale.startFullScreen();
 
     },
 
