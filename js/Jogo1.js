@@ -24,6 +24,8 @@ Game.Jogo1 = function(game) {
         group: null,
     };
 
+    this.gamewon = false;
+
     this.sfx = {
         error: null,
         good: null,
@@ -36,6 +38,12 @@ Game.Jogo1 = function(game) {
         drop: null,
         win: null,
     };
+
+    // Battery
+    this.battery_cells = null;
+
+    // Menu
+    this.submenu = null;
 
 }
 
@@ -73,8 +81,9 @@ Game.Jogo1.prototype = {
         this.setRotationChangeTimer();
 
         // Launch Button
-        this.launch_button = this.add.button(this.world.centerX, this.world.height - 70, 'red_square', this.launchElet, this);
-        this.launch_button.anchor.set(0.5);
+        this.launch_button = this.add.button(this.camera.bounds.width * 1/4, this.world.height - 10, 'launch_button', this.launchElet, this, 0, 0, 1, 0);
+        this.launch_button.anchor.set(0.5, 1);
+        this.launch_button.scale.set(0.7);
 
         // Electronic to be launched
         this.elet = null;
@@ -88,6 +97,53 @@ Game.Jogo1.prototype = {
         // this.time.events.add(Phaser.Timer.SECOND * 5, () => {
         //     this.add.tween(this.combination.group).to({x: -600}, 1000, Phaser.Easing.Elastic.In, true);
         // }, this);
+
+        /* BATTERY */
+        let battery_holder = this.add.sprite(this.camera.bounds.width * 3/4, 0, 'battery_holder');
+        battery_holder.x -= battery_holder.width/2;
+
+        this.battery_cells = this.add.group();
+        this.battery_cells.x = battery_holder.x;
+
+        /* MENU */
+        let menu_scale = 0.5;
+        let menu_btn = this.add.button(this.camera.bounds.width, 0, 'menu_buttons', this.toggleMenu, this, 2, 2);
+        menu_btn.anchor.set(1, 0);
+        menu_btn.scale.set(menu_scale);
+
+        this.submenu = this.add.group();
+        this.submenu.scale.set(menu_scale);
+
+        // let other_btn = this.add.button(0, 0, 'menu_buttons', () => {}, this, 7, 7);
+        // this.submenu.add(other_btn);
+
+        let exit_btn = this.add.button(0, 0, 'menu_buttons', this.gotoMainMenu, this, 6, 6);
+        this.submenu.add(exit_btn);
+
+
+        this.submenu.alignTo(menu_btn, Phaser.BOTTOM_RIGHT);
+        this.submenu.x = this.camera.bounds.width;
+        this.submenu.align(-1, 1, exit_btn.width, exit_btn.height);
+    },
+
+    toggleMenu: function(menu_btn) {
+        if (menu_btn.frame == 2) {
+            menu_btn.setFrames(3, 3);
+            this.showSubmenu();
+        } else if (menu_btn.frame == 3) {
+            menu_btn.setFrames(2, 2);
+            this.hideSubmenu();
+        }
+    },
+
+    showSubmenu: function() {
+        this.add.tween(this.submenu)
+            .to({x: this.camera.bounds.width - this.submenu.children.length * this.submenu.children[0].width * this.submenu.scale.x}, 300, Phaser.Easing.Cubic.Out, true);
+    },
+
+    hideSubmenu: function() {
+        this.add.tween(this.submenu)
+            .to({x: this.camera.bounds.width}, 300, Phaser.Easing.Cubic.Out, true);
 
     },
 
@@ -158,6 +214,7 @@ Game.Jogo1.prototype = {
     },
 
     newElet: function() {
+        this.highlightAttachedRequiredElets();
         if (this.elet != null) this.elet.destroy();
         const key = this.rnd.pick(this.elet_images);
         const e = this.add.sprite(this.world.width * 1/4, this.world.centerY, key);
@@ -204,7 +261,10 @@ Game.Jogo1.prototype = {
             this.add.tween(this.combination.group).to({x: 0}, 1000, Phaser.Easing.Elastic.Out, true);
 
             this.input.enabled = true;
+
+            this.highlightAttachedRequiredElets();
         }, this);
+
     },
 
     checkCombination: function() {
@@ -222,9 +282,13 @@ Game.Jogo1.prototype = {
         }
         // console.log(combs);
 
+        this.highlightAttachedRequiredElets();
+
         if (goal_reached) {
             // console.log("Goal Reached!");
             this.sfx.comb_complete.play();
+
+            this.incBatteryCells();
 
             let comb_strs = [];
             for (let k of this.elet_images) {
@@ -257,6 +321,35 @@ Game.Jogo1.prototype = {
             }
 
         }
+
+    },
+
+    highlightAttachedRequiredElets: function() {
+        // reset
+        this.combination.group.children.forEach(c => {
+            c.tint = 0xAA5555;
+            c.scale.set(0.4)
+        });
+
+        // apply
+        const combs = {};
+        for (let k of this.elet_images) {
+            let required = this.combination.group.filter(e => e.key == k);
+            let attached_left = this.rot_group.filter(e => e.key == k).list.length;
+
+            for (let req of required.list) {
+                if (attached_left) {
+                    req.scale.set(0.7);
+                    req.tint = 0xFFFFFF;
+                    attached_left -= 1;
+                }
+            }
+        }
+    },
+
+    incBatteryCells: function() {
+        let c = this.battery_cells.create(0, 0, 'battery_cell');
+        this.battery_cells.align(-1, 1, c.width, c.height);
     },
 
     winGame: function() {
@@ -269,7 +362,15 @@ Game.Jogo1.prototype = {
 
         let restart_button = this.add.button(this.world.centerX, this.world.centerY + 50, "restart_button", () => this.state.start("MainMenu"));
         restart_button.anchor.set(0.5);
-    }
+        restart_button.bringToTop();
+
+        this.elet.visible = false;
+    },
+
+    gotoMainMenu: function() {
+        this.state.start("MainMenu");
+    },
+
 
 
 }

@@ -43,6 +43,9 @@ Game.Preloader.prototype = {
         this.load.image('eletronico_02', 'assets/images/eletronico_02.png');
         this.load.image('eletronico_03', 'assets/images/eletronico_03.png');
         this.load.image('eletronico_04', 'assets/images/eletronico_04.png');
+        this.load.image('battery_holder', 'assets/images/j1_battery_holder.png');
+        this.load.image('battery_cell', 'assets/images/j1_battery_cell.png');
+        this.load.spritesheet('launch_button', 'assets/images/j1_launch_button.png', 256, 256);
 
         // Jogo2
         this.load.spritesheet('menu_buttons', 'assets/images/j2_buttons.png', 160, 128);
@@ -101,6 +104,7 @@ Game.Preloader.prototype = {
             this.ready = true;
             this.state.start('MainMenu');
             // this.state.start('Jogo1Intro');
+            // this.state.start('Jogo1');
             // this.state.start('Jogo2');
         }
     }
