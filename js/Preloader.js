@@ -71,6 +71,8 @@ Game.Preloader.prototype = {
         this.load.audio('sndIntroMusic', ['assets/music/space-walk.ogg']);
 
         // sons
+        this.load.audio("sndJ1INarracao", 'assets/sounds/j1i_narracao.wav');
+
         this.load.audio("sndExplosion", 'assets/sounds/explosion.wav');
         this.load.audio("sndFalling4s", 'assets/sounds/falling-4s.mp3');
         this.load.audio('sndError', 'assets/sounds/error.wav');
@@ -105,7 +107,7 @@ Game.Preloader.prototype = {
             this.state.start('MainMenu');
             // this.state.start('Jogo1Intro');
             // this.state.start('Jogo1');
-            // this.state.start('Jogo2');
+            // // this.state.start('Jogo2');
         }
     }
 }

@@ -23,6 +23,9 @@ Game.Jogo1Intro = function(game) {
     this.curr_step = 0;
 
     this.continue_icon = null;
+
+    // Narrations
+    this.narr = null;
 };
 
 Game.Jogo1Intro.prototype = {
@@ -30,6 +33,15 @@ Game.Jogo1Intro.prototype = {
     preload: function() {
 
         this.stage.backgroundColor = "#113344";
+
+        // Narrations
+        this.narr = this.add.sound('sndJ1INarracao', 1, false);
+        this.narr.allowMultiple = true;
+        this.narr.addMarker('eraumavez', 0, 3, 1, false);
+        this.narr.addMarker('costumavanavegar', 3, 3, 1, false);
+        this.narr.addMarker('naveteveproblema', 6, 3, 1, false);
+        this.narr.addMarker('caiunaterra', 9, 3, 1, false);
+        this.narr.addMarker('ajudeo', 12, 3, 1, false);
 
         this.background = this.add.sprite(0, 0, 'terraBackground');
         let scale = Math.max(this.camera.bounds.width/ this.background.width, this.camera.bounds.height/this.background.height);
@@ -39,7 +51,7 @@ Game.Jogo1Intro.prototype = {
         let style = { font: 'bold 40pt Arial', fill: 'white', align: 'left', wordWrap: true, wordWrapWidth: 450 };
         this.text = this.add.text(20, 20, "", style);
 
-        this.sndFalling = this.add.sound("sndFalling4s", 0.3, false);
+        this.sndFalling = this.add.sound("sndFalling4s", 0.1, false);
         this.sndExplosion = this.add.sound("sndExplosion", 1, false);
 
         this.explosionEmitter = this.add.emitter(0, 0);
@@ -56,22 +68,26 @@ Game.Jogo1Intro.prototype = {
         // functions
         this.steps.push(() => {
             this.text.text = "Era uma vez um robô chamado MAKI";
-            this.time.events.add(Phaser.Timer.SECOND * 5, this.stepEnded, this);
+            this.narr.play('eraumavez');
+            this.time.events.add(Phaser.Timer.SECOND * 3, this.stepEnded, this);
         });
 
         this.steps.push(() => {
             this.text.text = "Ele costumava navegar pela galáxia";
-            this.time.events.add(Phaser.Timer.SECOND * 5, this.stepEnded, this);
+            this.narr.play('costumavanavegar');
+            this.time.events.add(Phaser.Timer.SECOND * 3, this.stepEnded, this);
         });
 
         this.steps.push(() => {
             this.text.text = "Um dia, sua nave teve um problema";
-            this.time.events.add(Phaser.Timer.SECOND * 5, this.stepEnded, this);
+            this.narr.play('naveteveproblema');
+            this.time.events.add(Phaser.Timer.SECOND * 3, this.stepEnded, this);
         });
 
         this.steps.push(() => {
             this.text.text = "E caiu no planeta Terra";
-            this.time.events.add(Phaser.Timer.SECOND * 5, this.stepEnded, this);
+            this.narr.play('caiunaterra');
+            this.time.events.add(Phaser.Timer.SECOND * 3, this.stepEnded, this);
         });
 
         // Anim falling ship
@@ -117,7 +133,8 @@ Game.Jogo1Intro.prototype = {
 
             this.time.events.add(Phaser.Timer.SECOND * 3, () => {
                 this.text.text = "Ajude-o a se reconstruir!";
-                this.time.events.add(Phaser.Timer.SECOND * 5, this.stepEnded, this);
+                this.narr.play('ajudeo');
+                this.time.events.add(Phaser.Timer.SECOND * 3, this.stepEnded, this);
             });
         });
 

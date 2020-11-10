@@ -43,7 +43,7 @@ Game.MainMenu.prototype = {
     create: function() {
 
         if (Game.music == null) {
-            Game.music = this.add.audio('sndIntroMusic', 0.2);
+            Game.music = this.add.audio('sndIntroMusic', 0.1);
         }
 
         if (Game.music.isPlaying == false) {
@@ -105,10 +105,19 @@ Game.MainMenu.prototype = {
             // this.button_group.x = this.camera.bounds.width / 2;
             this.button_group.y = this.camera.bounds.height * 2;
             this.add.tween(this.button_group)
-                .to({y: 60},
-                    5000, Phaser.Easing.Cubic.Out, true, 15 * Phaser.Timer.SECOND);
+                .to({y: 60}, 5000, Phaser.Easing.Cubic.Out, true, 15 * Phaser.Timer.SECOND);
 
+            this.input.enabled = false;
+            this.time.events.add(Phaser.Timer.SECOND * 20, () => {
+                this.selectGame(this.jogo1Button);
+                this.input.enabled = true;
+            }, this);
 
+        } else {
+            // fade in
+            this.camera.fadeIn(0x000000, 1.5 * Phaser.Timer.SECOND);
+
+            this.selectGame(this.jogo1Button);
         }
     },
 
