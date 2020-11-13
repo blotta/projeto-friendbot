@@ -1,0 +1,49 @@
+body {
+    background-image: url("/assets/images/spaceBG-smaller.png");
+}
+
+
+main {
+    margin: 5rem 0 5rem;
+    border-radius: 1rem;
+    background-color: lightgray;
+    padding: 1rem;
+
+    background: rgba(200, 200, 200, 0.8);
+}
+
+section {
+    opacity: 1.0;
+    margin: 0 auto;
+    width: 80%;
+    margin-bottom: 4rem
+}
+
+section.inicio-main {
+    margin: 4rem auto 4rem;
+}
+
+.sect-title {
+    text-decoration: underline;
+    text-decoration-color: gray;
+
+    margin-bottom: 1rem;
+}
+
+form {
+    background: rgba(200, 200, 200, 0.8);
+    padding: 1rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+/* bootstrap */
+.navbar {
+    margin: 3rem 0 2rem;
+    border-radius: 1rem;
+    opacity: 0.8;
+}
+
+.card {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
