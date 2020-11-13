@@ -1,5 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&display=swap');
+
+* {
+    font-family: 'Goldman', cursive !important;
+}
+
 body {
-    background-image: url("/assets/images/spaceBG-smaller.png");
+    background-color: black;
+    background-image: url("../assets/images/spaceBG-smaller.png");
 }
 
 
@@ -23,6 +30,10 @@ section.inicio-main {
     margin: 4rem auto 4rem;
 }
 
+section.links {
+    width: 60%;
+}
+
 .sect-title {
     text-decoration: underline;
     text-decoration-color: gray;
@@ -35,6 +46,14 @@ form {
     padding: 1rem;
     border-radius: 1rem;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.green-text {
+    color: #338833;
+}
+
+.red-text {
+    color: #883333;
 }
 
 /* bootstrap */
