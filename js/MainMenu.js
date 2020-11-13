@@ -22,7 +22,25 @@ Game.MainMenu = function(game) {
             week: "Terça-feira",
             desc: "Crie uma música para ajudar o MAKI a se comunicar com seu planeta.",
             next_state: "Jogo2"
-        }
+        },
+        jogo3: {
+            title: "Decifrando a Mensagem",
+            week: "Quarta-feira",
+            desc: "Decifre a mensagem recebida dos amigos do MAKI.",
+            next_state: null
+        },
+        jogo4: {
+            title: "Construindo a Nave",
+            week: "Quinta-feira",
+            desc: "Arraste as peças da nave em seus devidos lugares.",
+            next_state: null
+        },
+        jogo5: {
+            title: "Decolagem!",
+            week: "Sexta-feira",
+            desc: "Com tudo pronto para voltar para casa, o MAKI decola em sua nave com rumo ao seu planeta. Mas ele se depara com um campo de asteroides. Ajude-o a atravessar em segurança.",
+            next_state: null
+        },
     }
 
     this.selectedGame = null;
@@ -72,6 +90,21 @@ Game.MainMenu.prototype = {
         this.jogo2Button.anchor.set(0.5, 0);
         this.button_group.add(this.jogo2Button);
 
+        let dud = this.make.button(0, 0, 'main_menu_btns', this.selectGame, this, 4, 4);
+        dud.data.gameStateKey = 'jogo3';
+        dud.anchor.set(0.5, 0);
+        this.button_group.add(dud);
+
+        dud = this.make.button(0, 0, 'main_menu_btns', this.selectGame, this, 4, 4);
+        dud.data.gameStateKey = 'jogo4';
+        dud.anchor.set(0.5, 0);
+        this.button_group.add(dud);
+
+        dud = this.make.button(0, 0, 'main_menu_btns', this.selectGame, this, 4, 4);
+        dud.data.gameStateKey = 'jogo5';
+        dud.anchor.set(0.5, 0);
+        this.button_group.add(dud);
+
 
         let w = 190;
         let h = 160;
@@ -79,14 +112,13 @@ Game.MainMenu.prototype = {
         this.button_group.y = 60;
         this.button_group.x = this.camera.bounds.centerX - w * this.button_group.children.length / 2;
 
-
         let title_style = { font: 'bold 40pt Arial', fill: 'white', align: 'left'};
         this.title = this.add.text(60, this.camera.bounds.centerY, "", title_style);
 
         let subtitle_style = { font: 'bold 20pt Arial', fill: 'white', align: 'left'};
         this.subtitle = this.add.text(60, this.camera.bounds.centerY + 60, "", subtitle_style);
 
-        let desc_style = { font: 'bold 20pt Arial', fill: 'white', align: 'left', wordWrap: true, wordWrapWidth: this.camera.bounds.width - 300};
+        let desc_style = { font: 'bold 20pt Arial', fill: 'white', align: 'left', wordWrap: true, wordWrapWidth: this.camera.bounds.width - 320};
         this.desc = this.add.text(60, this.camera.bounds.centerY + 120, "", desc_style);
 
         if (Game.menu_intro_skip == false){
@@ -106,6 +138,12 @@ Game.MainMenu.prototype = {
             this.button_group.y = this.camera.bounds.height * 2;
             this.add.tween(this.button_group)
                 .to({y: 60}, 5000, Phaser.Easing.Cubic.Out, true, 15 * Phaser.Timer.SECOND);
+            
+            for (let i = this.button_group.children.length - 1; i >= 0; i--) {
+                let btn = this.button_group.children[i];
+                btn.y += 200 * i;
+                this.add.tween(btn).to({y: 0}, 5000, Phaser.Easing.Back.Out, true, 15 * Phaser.Timer.SECOND);
+            }
 
             this.input.enabled = false;
             this.time.events.add(Phaser.Timer.SECOND * 20, () => {
@@ -144,9 +182,21 @@ Game.MainMenu.prototype = {
         if (this.play_btn == null) {
             this.play_btn = this.add.button(this.camera.bounds.width - 260, this.camera.bounds.centerY + 60, 'main_menu_btns', () => {}, this, 2, 2);
         }
-        this.play_btn.onInputUp.add(() => { 
-            this.play_btn = null;
-            this.state.start(this.selectedGame.next_state);
-        });
+
+        this.play_btn.onInputUp.removeAll();
+
+        if (this.selectedGame.next_state != null) {
+            this.play_btn.setFrames(2, 2);
+            this.play_btn.onInputUp.add(() => { 
+                this.play_btn = null;
+                this.state.start(this.selectedGame.next_state);
+            });
+            this.play_btn.input.enabled = true;
+        } else {
+            this.play_btn.setFrames(3, 3);
+            this.play_btn.input.enabled = false;
+        }
+
+        console.log(this.play_btn.onInputUp);
     },
 }
